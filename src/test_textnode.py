@@ -344,7 +344,5 @@ class TestTextNode(unittest.TestCase):
             TextNode(" and no link (https://boot.dev)", TextType.TEXT),
         ], new_nodes)
 
-
-
 if __name__ == "__main__":
     unittest.main()

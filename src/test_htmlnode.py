@@ -107,3 +107,6 @@ class TestHTMLNode(unittest.TestCase):
         parent_node = ParentNode("div", [child_node])
         parent_node2 = ParentNode("div", [child_node1])
         self.assertNotEqual(parent_node, parent_node2)
+    
+if __name__ == "__main__":
+    unittest.main()

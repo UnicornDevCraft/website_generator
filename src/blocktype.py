@@ -1,4 +1,4 @@
-"""This is a file that contains BlockType and 
+"""This is a file that contains BlockType definition and 
 a function to determine the type of the single block of markdown"""
 
 import re
@@ -13,13 +13,13 @@ class BlockType(Enum):
     OR_LIST = "ordered list"
 
 def block_to_block_type(block):
-    lines = block.splitlines()
+    lines = block.split("\n")
     
     if "\n" not in block and re.match(r"^#{1,6}\s", block):
         return BlockType.HEADING
     if block.startswith("```") and block.endswith("```"):
         return BlockType.CODE
-    if all(line.startswith("> ") for line in lines):
+    if all(line.startswith(">") for line in lines):
         return BlockType.QUOTE
     if all(line.startswith("- ") for line in lines):
         return BlockType.UN_LIST

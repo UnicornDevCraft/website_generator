@@ -1,4 +1,4 @@
-"""This file contains functions that work with raw markdown"""
+"""This file contains functions that work with the raw markdown"""
 
 import re
 
@@ -107,5 +107,15 @@ def markdown_to_blocks(markdown):
         new_part = part.strip("\n").strip()
         if len(new_part) > 0:
             blocks.append(new_part)
+
     return blocks
 
+def extract_title(markdown):
+    title = ""
+    for line in markdown.splitlines():
+        if re.match(r"\#\s.+?", line):
+            title = " ".join(line.split()[1:])
+    if not title:
+        raise Exception("No title was found!")
+    
+    return title

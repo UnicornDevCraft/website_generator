@@ -1,3 +1,5 @@
+"""This file contains the functions to turn blocks of raw markdown into one Parent HTML node with children"""
+
 from blocktype import BlockType, block_to_block_type
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from markdown import markdown_to_blocks, text_to_textnodes
@@ -55,15 +57,17 @@ def block_to_html_nodes(tag, block, block_type):
         for node in html_nodes:
             new_nodes.append(LeafNode("img", None, node.props))
         return new_nodes
-    if len(html_nodes) == 1 and block_type != BlockType.OR_LIST and block_type != BlockType.UN_LIST:
+    if len(html_nodes) == 1 and block_type != BlockType.OR_LIST and block_type != BlockType.UN_LIST and block_type != BlockType.PARAGRAPH:
         return [LeafNode(tag, clean_block)]
+    if len(html_nodes) == 1 and block_type == BlockType.PARAGRAPH:
+        return [ParentNode(tag, html_nodes)]
     if block_type == BlockType.HEADING or block_type == BlockType.PARAGRAPH or block_type == BlockType.QUOTE:
         return [ParentNode(tag, html_nodes)]
     if block_type == BlockType.OR_LIST or block_type == BlockType.UN_LIST:
         child_nodes = []
         for line in clean_block.splitlines():
             children = [text_node_to_html_node(node) for node in text_to_textnodes(line)]
-            if len(children) == 1:
+            if len(children) == 1 and children[0].tag == "p":
                 child_nodes.append(LeafNode("li", line))
             else:
                 child_nodes.append(ParentNode("li", children))
@@ -80,8 +84,6 @@ def markdown_to_html_node(markdown):
             nodes = block_to_html_nodes(tag, block, block_type)
             if nodes:
                 html_nodes.extend(nodes)
-            #html_for_block = [node.to_html() for node in nodes]
-            #html_code += "\n".join(html_for_block)
         return ParentNode("div", html_nodes)
+    
     return HTMLNode()
-        

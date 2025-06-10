@@ -1,3 +1,6 @@
+"""This file contains an HTMLNode class definition that has LeafNode and ParentNode as children.
+It also has a way to turn self closing tags into HTML"""
+
 from functools import reduce
 
 

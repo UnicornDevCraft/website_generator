@@ -1,11 +1,9 @@
 import unittest
 
 from md_to_html import markdown_to_html_node
+from markdown import extract_title
 
 class TestMarkdownParsing(unittest.TestCase):
-    def test_markdown_to_html_node(self):
-        pass
-
     def test_paragraphs(self):
         md = """
 This is **bolded** paragraph
@@ -58,14 +56,14 @@ the **same** even with inline stuff
 
     def test_blockquote(self):
         md = """
-> This is a blockquote
-> that spans multiple lines
+> "This is a blockquote"
+> 
 > with **bold** and _italic_
 """
         html = markdown_to_html_node(md).to_html()
         self.assertEqual(
             html,
-            "<div><blockquote>This is a blockquote that spans multiple lines with <b>bold</b> and <i>italic</i></blockquote></div>"
+            "<div><blockquote>\"This is a blockquote\"  with <b>bold</b> and <i>italic</i></blockquote></div>"
         )
 
     def test_unordered_list(self):
@@ -79,6 +77,15 @@ the **same** even with inline stuff
             html,
             "<div><ul><li>First item <b>bold</b></li><li>Second item <i>italic</i></li><li>Third item with <code>code</code></li></ul></div>"
         )
+
+    def test_unordered_list_with_links(self):
+        md = """
+- [Why Glorfindel is More Impressive than Legolas](/blog/glorfindel)
+- [Why Tom Bombadil Was a Mistake](/blog/tom)
+- [The Unparalleled Majesty of "The Lord of the Rings"](/blog/majesty)
+"""
+        html = markdown_to_html_node(md).to_html()
+        self.assertEqual(html, '<div><ul><li><a href="/blog/glorfindel">Why Glorfindel is More Impressive than Legolas</a></li><li><a href="/blog/tom">Why Tom Bombadil Was a Mistake</a></li><li><a href="/blog/majesty">The Unparalleled Majesty of "The Lord of the Rings"</a></li></ul></div>')
 
     def test_ordered_list(self):
         md = """
@@ -132,3 +139,31 @@ Another _italic
 """
         with self.assertRaises(Exception):
             markdown_to_html_node(md).to_html()
+
+    def test_extract_title(self):
+        md = """
+# This is the title
+
+## And this is not the title
+
+#
+
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "This is the title")
+
+    def test_extract_title_exception(self):
+        md = """
+There is no title
+## In this markdown
+# """
+        with self.assertRaises(Exception):
+            extract_title(md)
+
+    def test_extract_title_no_md(self):
+        md = " "
+        with self.assertRaises(Exception):
+            extract_title(md)
+
+if __name__ == "__main__":
+    unittest.main()

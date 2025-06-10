@@ -1,18 +1,85 @@
+"""This is the main file which is ran using ./main.sh.
+It has the way to copy files from static folder and generate html pages from
+the markdown files in the content folder to public folder."""
+
+import os
+import shutil
+
+from markdown import extract_title
+from md_to_html import markdown_to_html_node
 from textnode import TextNode,TextType
 from htmlnode import HTMLNode, LeafNode, ParentNode
 
 
-def main():
-    node = ParentNode(
-    "p",
-    [
-        LeafNode("b", "Bold text"),
-        LeafNode(None, "Normal text"),
-        LeafNode("i", "italic text"),
-        LeafNode("a", "Normal text", {"href": "https://www.google.com", "target": "_blank",}),
-    ],
-)
+def copy_to_public(path_from, path_to):
+    print(f"Let's copy from {path_from} to {[path_to]}")
+    if os.path.exists(path_to):
+        print(f"Removing {path_to}")
+        try:
+            shutil.rmtree(path_to)
+        except FileNotFoundError:
+            print("Directory not found.")
+        except PermissionError:
+            print("Permission denied.")
 
-    print(node.to_html())
+    what_to_copy = os.listdir(path_from)
+    print(f"The contents of the static folder: {what_to_copy}")
+    
+    if not os.path.exists(path_to):
+        print(f"Creating {path_to}")
+        os.mkdir(path_to)
+
+    for file in what_to_copy:
+        to_copy = os.path.join(path_from, file)
+        where_to_copy = os.path.join(path_to, file)
+        if os.path.isfile(to_copy):
+            print(f"Copying {file} to {path_to}")
+            try:
+                shutil.copy(to_copy, where_to_copy)
+                print(f"{file} was successfully copied!")
+            except FileNotFoundError:
+                print("The file was not found!")
+            except PermissionError:
+                print("Permission denied.")
+        else:
+            copy_to_public(to_copy, where_to_copy)
+    
+def generate_page(from_path, template_path, dest_path):
+    print(f"Generating page from {from_path} to {dest_path} using {template_path}")
+    with open(from_path) as md_file:
+        markdown = md_file.read()
+
+    with open(template_path) as temp_file:
+        template = temp_file.read()
+
+    html_string = markdown_to_html_node(markdown).to_html()
+    title = extract_title(markdown)
+    new_html_page = template.replace("{{ Title }}", title).replace("{{ Content }}", html_string)
+
+    with open(dest_path, "w") as dest_file:
+        dest_file.write(new_html_page)
+
+def generate_pages_recursive(dir_path_content, template_path, dest_dir_path):
+    if os.path.isfile(dir_path_content):
+        html_extension = dest_dir_path.replace("md", "html")
+        generate_page(dir_path_content, template_path, html_extension)
+    else:
+        files_to_generate = os.listdir(dir_path_content)
+        for file in files_to_generate:
+            file_from = os.path.join(dir_path_content, file)
+            file_to = os.path.join(dest_dir_path, file)
+            if os.path.isdir(file_from) and not os.path.exists(file_to):
+                os.mkdir(file_to)
+            generate_pages_recursive(file_from, template_path, file_to)
+
+
+def main():
+    path_from = "/home/kseniia/workspace/github.com/UnicornDevCraft/website_generator/static"
+    path_to = "/home/kseniia/workspace/github.com/UnicornDevCraft/website_generator/public"
+    copy_to_public(path_from, path_to)
+    dir_path_content = "/home/kseniia/workspace/github.com/UnicornDevCraft/website_generator/content"
+    template_path = "/home/kseniia/workspace/github.com/UnicornDevCraft/website_generator/template.html"
+    dest_dir_path = "/home/kseniia/workspace/github.com/UnicornDevCraft/website_generator/public"
+    generate_pages_recursive(dir_path_content, template_path, dest_dir_path)
 
 main()

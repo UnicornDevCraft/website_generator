@@ -1,4 +1,4 @@
-"""This file contains TextType definition and TextNode class"""
+"""This file contains TextType definition and TextNode class with a function to turn text node into HTML node"""
 
 from enum import Enum
 from htmlnode import LeafNode
@@ -42,4 +42,3 @@ def text_node_to_html_node(text_node):
             return LeafNode("img", None, {"src": text_node.url, "alt": text_node.text})
         case _:
             raise Exception(f"{text_node.text_type.name} text type is not allowed")
-        
